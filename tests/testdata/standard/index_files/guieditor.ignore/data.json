@@ -1,0 +1,24 @@
+{
+    "bowl": {
+        "main": {
+            "modId": "_sys/root",
+            "fields": {
+                "main": [
+                    {
+                        "modId": "pickles2:sample_cat/sample",
+                        "fields": {
+                            "main": {
+                                "src": "## モジュールのサンプルです\n\n配布するモジュールは `/modules` 内に格納します。\n",
+                                "editor": "markdown"
+                            }
+                        },
+                        "anchor": "",
+                        "dec": ""
+                    }
+                ]
+            },
+            "anchor": "",
+            "dec": ""
+        }
+    }
+}

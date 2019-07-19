@@ -13,7 +13,7 @@ return call_user_func( function(){
 	// project
 
 	/** サイト名 */
-	$conf->name = 'Get start "Pickles 2" !';
+	$conf->name = 'Broccoli Module Sample';
 
 	/** コピーライト表記 */
 	$conf->copyright = 'Pickles 2 Project';
@@ -23,7 +23,7 @@ return call_user_func( function(){
 	 * 本番環境のスキーマ
 	 * (例: http, https)
 	 */
-	$conf->scheme = 'http';
+	$conf->scheme = 'https';
 
 	/**
 	 * ドメイン
@@ -39,13 +39,13 @@ return call_user_func( function(){
 	// paths
 
 	/** トップページのパス(デフォルト "/") */
-	$conf->path_top = '/';
+	$conf->path_top = '/tests/testdata/standard/index.html';
 
 	/** パブリッシュ先ディレクトリパス */
-	$conf->path_publish_dir = './px-files/dist/';
+	$conf->path_publish_dir = null;
 
 	/** 公開キャッシュディレクトリ */
-	$conf->public_cache_dir = '/common/px_resources/';
+	$conf->public_cache_dir = '/tests/testdata/standard/common/px_resources/';
 
 	/**
 	 * リソースディレクトリ(各コンテンツに対して1:1で関連付けられる)のパス
@@ -68,7 +68,7 @@ return call_user_func( function(){
 	$conf->path_files = '{$dirname}/{$filename}_files/';
 
 	/** Contents Manifesto のパス */
-	$conf->contents_manifesto = '/common/contents_manifesto.ignore.php';
+	$conf->contents_manifesto = '/tests/testdata/standard/common/contents_manifesto.ignore.php';
 
 
 	/**
@@ -136,6 +136,14 @@ return call_user_func( function(){
 		'*/.svn/*' => 'ignore' ,
 		'*/.git/*' => 'ignore' ,
 		'*/.gitignore' => 'ignore' ,
+
+		'/modules/*' => 'ignore' ,
+		'/src_gulp/*' => 'ignore' ,
+		'/broccoli.json' => 'ignore' ,
+		'/node_modules/*' => 'ignore' ,
+		'/package-lock.json' => 'ignore' ,
+		'/package.json' => 'ignore' ,
+		'/gulpfile.js' => 'ignore' ,
 
 		'*.html' => 'html' ,
 		'*.htm' => 'html' ,
@@ -230,28 +238,6 @@ return call_user_func( function(){
 
 		// PX=phpinfo
 		'picklesFramework2\commands\phpinfo::register' ,
-
-		// sitemapExcel
-		'tomk79\pickles2\sitemap_excel\pickles_sitemap_excel::exec('.json_encode(array(
-			// `master_format`
-			// マスターにするファイルフォーマットを指定します。
-			//   - `timestamp` = タイムスタンプが新しい方をマスターにする(デフォルト)
-			//   - `xlsx` = XLSXをマスターにする
-			//   - `csv` = CSVをマスターにする
-			//   - `pass` = 変換しない
-			// のいずれかを指定します。
-			'master_format'=>'xlsx',
-
-			// `files_master_format`
-			// ファイル名ごとにマスターにするファイルフォーマットを指定します。
-			// ここに設定されていないファイルは、 `master_format` の設定に従います。
-			'files_master_format'=>array(
-				// 'timestamp_sitemap'=>'timestamp',
-				// 'csv_master_sitemap'=>'csv',
-				// 'xlsx_master_sitemap'=>'xlsx',
-				// 'no_convert'=>'pass',
-			),
-		)).')' ,
 	);
 
 	/**
@@ -264,7 +250,7 @@ return call_user_func( function(){
 		'picklesFramework2\commands\api::register' ,
 
 		// PX=publish (px2-publish-ex)
-		'tomk79\pickles2\publishEx\publish::register' ,
+		'picklesFramework2\commands\publish::register()' ,
 
 		// PX=px2dthelper
 		'tomk79\pickles2\px2dthelper\main::register' ,
@@ -286,36 +272,17 @@ return call_user_func( function(){
 		// ページ内目次を自動生成する
 		'picklesFramework2\processors\autoindex\autoindex::exec' ,
 
-		// px2-path-resolver - 共通コンテンツのリンクやリソースのパスを解決する
-		//   このAPIは、サイトマップCSV上で path と content が異なるパスを参照している場合に、
-		//   相対的に記述されたリンクやリソースのパスがあわなくなる問題を解決します。
-		'tomk79\pickles2\pathResolver\main::resolve_common_contents()' ,
-
 		// テーマ
 		'theme'=>'tomk79\pickles2\multitheme\theme::exec('.json_encode(array(
 			'param_theme_switch'=>'THEME',
 			'cookie_theme_switch'=>'THEME',
 			'path_theme_collection'=>'./px-files/themes/',
 			'attr_bowl_name_by'=>'data-contents-area',
-			'default_theme_id'=>'pickles2',
+			'default_theme_id' => 'gui_sample',
 		)).')' ,
 
 		// Apache互換のSSIの記述を解決する
 		'picklesFramework2\processors\ssi\ssi::exec' ,
-
-		// DEC変換処理の実行
-		//   Pickles2の状態を参照し、自動的に処理を振り分けます。
-		//   パブリッシュする場合、DECコメントを削除します。
-		//   プレビューの場合、DECライブラリを埋め込み、
-		//   URIパラメータからDECの表示・非表示を切り替えられるようにします。
-		'tomk79\pickles2\dec\main::exec()' ,
-
-		// 属性 data-contents-area を削除する
-		'tomk79\pickles2\remove_attr\main::exec('.json_encode(array(
-			"attrs"=>array(
-				'data-contents-area',
-			) ,
-		)).')' ,
 
 		// broccoli-receive-message スクリプトを挿入
 		'tomk79\pickles2\px2dthelper\broccoli_receive_message::apply('.json_encode( array(
@@ -323,12 +290,19 @@ return call_user_func( function(){
 			'enabled_origin'=>array(
 			)
 		) ).')' ,
+
+		// output_encoding, output_eol_coding の設定に従ってエンコード変換する。
+		'picklesFramework2\processors\encodingconverter\encodingconverter::exec' ,
 	);
 
 	$conf->funcs->processor->css = array(
+		// output_encoding, output_eol_coding の設定に従ってエンコード変換する。
+		'picklesFramework2\processors\encodingconverter\encodingconverter::exec' ,
 	);
 
 	$conf->funcs->processor->js = array(
+		// output_encoding, output_eol_coding の設定に従ってエンコード変換する。
+		'picklesFramework2\processors\encodingconverter\encodingconverter::exec' ,
 	);
 
 	$conf->funcs->processor->md = array(
@@ -356,31 +330,6 @@ return call_user_func( function(){
 	 * (HTMLの場合は、テーマの処理の後のコードが対象になります)
 	 */
 	$conf->funcs->before_output = array(
-		// px2-path-resolver - 相対パス・絶対パスを変換して出力する
-		//   options
-		//     string 'to':
-		//       - relate: 相対パスへ変換
-		//       - absolute: 絶対パスへ変換
-		//       - pass: 変換を行わない(default)
-		//     bool 'supply_index_filename':
-		//       - true: 省略されたindexファイル名を補う
-		//       - false: 省略できるindexファイル名を削除
-		//       - null: そのまま (default)
-		'tomk79\pickles2\pathResolver\main::exec('.json_encode(array(
-			'to' => 'absolute' ,
-			'supply_index_filename' => false
-		)).')' ,
-
-		// output_encoding, output_eol_coding の設定に従ってエンコード変換する。
-		'picklesFramework2\processors\encodingconverter\encodingconverter::exec('.json_encode(array(
-			'ext'=>array( // 対象の拡張子。省略時はすべてのリクエストが適用される。
-				'html',
-				'htm',
-				'css',
-				'js',
-			),
-		)).')' ,
-
 	);
 
 
@@ -401,7 +350,8 @@ return call_user_func( function(){
 
 	/** broccoliモジュールセットの登録 */
 	$conf->plugins->px2dt->paths_module_template = array(
-		// 'moduleId' => './path/to/module/',
+		'pickles2' => './modules/',
+		'std-document' => './vendor/tomk79/broccoli-module-std-document/modules/',
 	);
 
 	/** プロジェクト固有のモジュールセットの格納ディレクトリ */
@@ -460,7 +410,7 @@ return call_user_func( function(){
 	 * -1 を与えた場合、無限(システムリソースの上限まで)に設定されます。
 	 * サイトマップやコンテンツなどで、容量の大きなデータを扱う場合に調整してください。
 	 */
-	// @ini_set( 'memory_limit' , -1 );
+	@ini_set( 'memory_limit' , -1 );
 
 	/**
 	 * `display_errors`, `error_reporting`
@@ -473,8 +423,8 @@ return call_user_func( function(){
 	 *
 	 * エラーメッセージは問題解決の助けになります。
 	 */
-	// @ini_set('display_errors', 1);
-	// @ini_set('error_reporting', E_ALL);
+	@ini_set('display_errors', 1);
+	@ini_set('error_reporting', E_ALL);
 
 
 	return $conf;
